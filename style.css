@@ -67,13 +67,3 @@ button:hover {
   background-color: #fff;
   color: #000;
 }
-
-#downloadLink {
-  margin-top: 20px;
-}
-
-#downloadLink a {
-  color: #fff;
-  text-decoration: underline;
-  font-size: 18px;
-}
