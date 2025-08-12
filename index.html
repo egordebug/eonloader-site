@@ -4,24 +4,161 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EonLoader</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      text-align: center;
+    }
+    button {
+      background-color: #000;
+      color: #fff;
+      border: 2px solid #fff;
+      padding: 12px 24px;
+      margin: 10px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #fff;
+      color: #000;
+      transition: 0.2s;
+    }
+    /* Modal styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.hidden {
+      display: none;
+    }
+    .modal-content {
+      background-color: #222;
+      padding: 20px 30px;
+      border: 2px solid #fff;
+      text-align: center;
+      max-width: 400px;
+    }
+    .modal-btn, .emu-download {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: 2px solid #fff;
+      background-color: #000;
+      color: #fff;
+      cursor: pointer;
+    }
+    .modal-btn:hover, .emu-download:hover {
+      background-color: #fff;
+      color: #000;
+    }
+    .requirements {
+      margin-top: 15px;
+      font-size: 14px;
+      text-align: left;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h1>EonLoader</h1>
     <button id="checkUpdate">Скачать последнюю версию</button>
-    <button id="downloadSources">Скачать исходный код (В разработке )</button>
+    <button id="downloadSources">Скачать исходный код (В разработке)</button>
   </div>
 
-  <!-- Modal -->
+  <!-- Основная модалка -->
   <div id="modal" class="modal hidden">
     <div class="modal-content">
-      <p>Выберите свою платформу :</p>
+      <p>Выберите свою платформу:</p>
       <button class="modal-btn" data-platform="mobile">Телефон с root</button>
       <button class="modal-btn" data-platform="emu">Bluestacks</button>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- Модалка выбора для Bluestacks -->
+  <div id="modal-emu" class="modal hidden">
+    <div class="modal-content">
+      <p>Выберите формат загрузки для Bluestacks:</p>
+      <button class="emu-download" data-type=".apk">Скачать APK</button>
+      <button class="emu-download" data-type=".exe">Скачать EXE</button>
+
+      <div class="requirements">
+        <p><strong>Требуется (APK):</strong><br>rooted Bluestacks</p>
+        <p><strong>Требуется (EXE):</strong><br>rooted Bluestacks<br>enabled ADB in Bluestacks</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const modal = document.getElementById("modal");
+    const modalEmu = document.getElementById("modal-emu");
+    const checkUpdateBtn = document.getElementById("checkUpdate");
+    const modalBtns = document.querySelectorAll(".modal-btn");
+    const emuDownloadBtns = document.querySelectorAll(".emu-download");
+
+    // Открытие основной модалки
+    checkUpdateBtn.onclick = () => {
+      modal.classList.remove("hidden");
+    };
+
+    // Обработка выбора платформы
+    modalBtns.forEach(button => {
+      button.onclick = () => {
+        const platform = button.dataset.platform;
+        if (platform === "emu") {
+          modal.classList.add("hidden");
+          modalEmu.classList.remove("hidden");
+        } else {
+          startDownload(platform, ".apk");
+          modal.classList.add("hidden");
+        }
+      };
+    });
+
+    // Обработка выбора формата для Bluestacks
+    emuDownloadBtns.forEach(button => {
+      button.onclick = () => {
+        startDownload("emu", button.dataset.type);
+        modalEmu.classList.add("hidden");
+      };
+    });
+
+    function startDownload(platform, fileType) {
+      const jsonFile = platform === "emu" ? "version-emu.json" : "version.json";
+
+      fetch(jsonFile)
+        .then(response => response.json())
+        .then(data => {
+          const filename = platform === "emu" 
+            ? `signed-emu${fileType}` 
+            : `signed${fileType}`;
+          const baseTag = `${data.version}-release`;
+          const downloadLink = `https://github.com/egordebug/eonloader_pc_mobile/releases/download/${baseTag}/${filename}`;
+          window.location.href = downloadLink;
+        })
+        .catch(() => {
+          alert("Failed to fetch update info.");
+        });
+    }
+
+    document.getElementById("downloadSources").onclick = () => {
+      alert("Sources are in development...");
+    };
+  </script>
 </body>
 </html>
